@@ -1,0 +1,199 @@
+ <!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PIK-R Bojo Sios</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#eef6fc; margin:0; padding:0;}
+  .container { max-width: 720px; margin:20px auto; background:#fff; border-radius:8px; padding:20px; box-shadow:0 4px 8px rgba(0,0,0,0.1);}
+  h1,h2 { text-align:center; color:#1a73e8;}
+  .logo {display:block; margin: 0 auto 15px; max-height:100px;}
+  form { margin-top:15px;}
+  input[type=text],textarea {width:100%; padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:6px; box-sizing:border-box; font-size:16px;}
+  button { background:#1a73e8; color:#fff; border:none; padding:12px; width:100%; font-size:18px; border-radius:6px; cursor:pointer; }
+  button:hover { background:#155ab6;}
+  .timer { font-weight:bold; color:#d9534f; text-align:right; font-family: monospace; font-size:18px; margin-bottom:20px;}
+  .question { margin-bottom:25px; border-bottom:1px solid #eee; padding-bottom:12px;}
+  label { display:block; margin:6px 0; cursor:pointer;}
+  label input { margin-right:8px;}
+  footer { text-align:center; margin:20px 0; color:#666; font-size:14px;}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div id="loginDiv">
+    <img src="https://files.catbox.moe/jiio1u.jpg" alt="Logo PIK-R Bojo Sios" class="logo" />
+    <h1>PIK-R Bojo Sios</h1>
+    <form id="loginForm">
+      <input type="text" id="nama" placeholder="Masukkan Nama Lengkap" required autocomplete="off" />
+      <input type="text" id="kelas" placeholder="Masukkan Asal Kelas" required autocomplete="off" />
+      <button type="submit">Mulai Ujian</button>
+    </form>
+  </div>
+
+  <div id="examDiv" style="display:none;">
+    <img src="https://files.catbox.moe/jiio1u.jpg" alt="Logo PIK-R Bojo Sios" class="logo" />
+    <h1>PIK-R Bojo Sios</h1>
+    <div class="timer" id="timer">Waktu tersisa: 90:00</div>
+    <form id="examForm" action="https://formspree.io/f/meogwbrl" method="POST">
+      <input type="hidden" name="nama" id="hiddenNama" />
+      <input type="hidden" name="kelas" id="hiddenKelas" />
+
+      <div id="questionsContainer"></div>
+
+      <button type="submit">Kirim Jawaban</button>
+    </form>
+  </div>
+
+</div>
+
+<footer>
+  &copy; 2025 PIK-R Bojo Sios. Bersama Kita Bisa.
+</footer>
+
+<script>
+  const loginForm = document.getElementById('loginForm');
+  const loginDiv = document.getElementById('loginDiv');
+  const examDiv = document.getElementById('examDiv');
+  const questionsContainer = document.getElementById('questionsContainer');
+  const timerDisplay = document.getElementById('timer');
+  const hiddenNama = document.getElementById('hiddenNama');
+  const hiddenKelas = document.getElementById('hiddenKelas');
+  const examForm = document.getElementById('examForm');
+
+  const totalSeconds = 90 * 60; // 90 menit
+  let timeLeft = totalSeconds;
+  let timerInterval;
+
+  // Soal pilihan ganda 40 soal (8 mapel x 5 soal) + 5 esai
+  const pgQuestions = [
+    // IPA
+    {q:"Proses fotosintesis pada tumbuhan terjadi di bagian ...", options:["Akar","Batang","Daun","Bunga"], name:"q1"},
+    {q:"Enzim amilase berfungsi memecah ...", options:["Protein","Karbohidrat","Lemak","Vitamin"], name:"q2"},
+    {q:"Organ pernapasan utama manusia adalah ...", options:["Paru-paru","Jantung","Ginjal","Hati"], name:"q3"},
+    {q:"Sumber energi utama fotosintesis adalah ...", options:["Air","Cahaya matahari","Tanah","Oksigen"], name:"q4"},
+    {q:"Perubahan cair ke gas disebut ...", options:["Kondensasi","Evaporasi","Presipitasi","Sublimasi"], name:"q5"},
+
+    // IPS
+    {q:"Ibukota Jawa Tengah adalah ...", options:["Semarang","Surabaya","Bandung","Yogyakarta"], name:"q6"},
+    {q:"Pulau terbesar di Indonesia ...", options:["Kalimantan","Sumatera","Jawa","Bali"], name:"q7"},
+    {q:"Sistem pemerintahan Indonesia adalah ...", options:["Monarki","Demokrasi","Oligarki","Diktator"], name:"q8"},
+    {q:"Sumber daya alam terbarukan adalah ...", options:["Minyak bumi","Air","Batu bara","Emas"], name:"q9"},
+    {q:"Lembaga yang mengatur keuangan negara ...", options:["MPR","BPK","DPR","BI"], name:"q10"},
+
+    // Pancasila
+    {q:"Sila pertama Pancasila adalah ...", options:["Ketuhanan yang Maha Esa","Keadilan sosial","Persatuan Indonesia","Kerakyatan"], name:"q11"},
+    {q:"Lambang Pancasila adalah ...", options:["Burung Garuda","Merpati","Elang Jawa","Rajawali"], name:"q12"},
+    {q:"Pancasila dirumuskan oleh ...", options:["Soekarno dan Hatta","Presiden RI","BPUPKI","MPR"], name:"q13"},
+    {q:"Sila keempat Pancasila mengandung arti ...", options:["Persatuan","Kerakyatan","Keadilan sosial","Ketuhanan"], name:"q14"},
+    {q:"Jumlah sila Pancasila adalah ...", options:["4","5","6","7"], name:"q15"},
+
+    // Informatika
+    {q:"Fungsi utama sistem operasi adalah ...", options:["Mengatur perangkat keras","Menyimpan data","Membuat website","Membuat dokumen"], name:"q16"},
+    {q:"Perangkat keras untuk input data ...", options:["Monitor","Keyboard","Printer","Speaker"], name:"q17"},
+    {q:"Bahasa pemrograman untuk website ...", options:["Python","HTML","Java","C++"], name:"q18"},
+    {q:"Media penyimpanan eksternal adalah ...", options:["RAM","Hard disk eksternal","CPU","Monitor"], name:"q19"},
+    {q:"Internet menghubungkan ...", options:["Satu komputer","Banyak komputer","Smartphone","Tablet"], name:"q20"},
+
+    // PAI-BP
+    {q:"Nabi Muhammad lahir di kota ...", options:["Mekah","Madinah","Yerusalem","Kufah"], name:"q21"},
+    {q:"Shalat wajib sehari ...", options:["3","4","5","6"], name:"q22"},
+    {q:"Bulan puasa umat Islam ...", options:["Ramadhan","Muharram","Syawal","Zulhijah"], name:"q23"},
+    {q:"Kitab suci umat Islam ...", options:["Al-Qur’an","Alkitab","Weda","Tripitaka"], name:"q24"},
+    {q:"Rukun Islam berjumlah ...", options:["3","4","5","6"], name:"q25"},
+
+    // Matematika
+    {q:"8 × 7 hasilnya ...", options:["54","56","58","60"], name:"q26"},
+    {q:"Jika x + 6 = 14, x adalah ...", options:["6","7","8","9"], name:"q27"},
+    {q:"0,2 sama dengan pecahan ...", options:["1/5","1/4","1/3","1/2"], name:"q28"},
+    {q:"Luas persegi sisi 5 cm ...", options:["10","20","25","30"], name:"q29"},
+    {q:"15 - 7 hasilnya ...", options:["8","9","7","6"], name:"q30"},
+
+    // Bahasa Indonesia
+    {q:"Sinonim 'bahagia' adalah ...", options:["Sedih","Senang","Marah","Jengkel"], name:"q31"},
+    {q:"Kalimat tanya adalah ...", options:["Aku suka membaca","Siapa namamu?","Dia pergi sekolah","Mereka main bola"], name:"q32"},
+    {q:"Antonim 'besar' adalah ...", options:["Kecil","Panjang","Tinggi","Lebar"], name:"q33"},
+    {q:"Kalimat efektif artinya ...", options:["Panjang","Jelas & singkat","Banyak kata","Sulit"], name:"q34"},
+    {q:"Kata kerja pada 'Dia membaca buku' ...", options:["Dia","Sedang","Membaca","Buku"], name:"q35"},
+
+    // Bahasa Inggris
+    {q:"Past tense of 'eat'?", options:["Eated","Eat","Ate","Eats"], name:"q36"},
+    {q:"Choose correct sentence:", options:["She are happy","She is happy","She am happy","She be happy"], name:"q37"},
+    {q:"Sky color on clear day?", options:["Blue","Green","Red","Yellow"], name:"q38"},
+    {q:"Translate 'Saya suka bermain bola'", options:["I like playing ball","I am playing ball","I will play ball","I play ball yesterday"], name:"q39"},
+    {q:"Plural of 'child'?", options:["Childs","Childes","Children","Child"], name:"q40"},
+  ];
+
+  const essayQuestions = [
+    {q:"Jelaskan proses fotosintesis pada tumbuhan secara singkat.", name:"essay1"},
+    {q:"Sebutkan tiga contoh sumber daya alam terbarukan dan jelaskan.", name:"essay2"},
+    {q:"Apa makna sila pertama Pancasila bagi warga negara Indonesia?", name:"essay3"},
+    {q:"Jelaskan fungsi sistem operasi pada komputer.", name:"essay4"},
+    {q:"Apa arti penting shalat dalam agama Islam?", name:"essay5"},
+  ];
+
+  function createPGQuestion(qObj){
+    let html = `<div class="question"><b>${qObj.q}</b>`;
+    qObj.options.forEach((opt,i)=>{
+      let id = `${qObj.name}_${i}`;
+      html += `<label for="${id}"><input type="radio" name="${qObj.name}" id="${id}" value="${opt}" required> ${opt}</label>`;
+    });
+    html += `</div>`;
+    return html;
+  }
+
+  function createEssayQuestion(qObj){
+    return `<div class="question"><b>${qObj.q}</b><textarea name="${qObj.name}" placeholder="Jawaban..." required></textarea></div>`;
+  }
+
+  function loadQuestions(){
+    let html = '';
+    pgQuestions.forEach(q => {
+      html += createPGQuestion(q);
+    });
+    essayQuestions.forEach(q => {
+      html += createEssayQuestion(q);
+    });
+    questionsContainer.innerHTML = html;
+  }
+
+  function startTimer(){
+    timerInterval = setInterval(()=>{
+      if(timeLeft <= 0){
+        clearInterval(timerInterval);
+        alert("Waktu habis! Jawaban akan otomatis dikirim.");
+        examForm.submit();
+      } else {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60);
+        let s = timeLeft % 60;
+        timerDisplay.textContent = `Waktu tersisa: ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+      }
+    },1000);
+  }
+
+  loginForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const namaVal = document.getElementById('nama').value.trim();
+    const kelasVal = document.getElementById('kelas').value.trim();
+    if(namaVal && kelasVal){
+      hiddenNama.value = namaVal;
+      hiddenKelas.value = kelasVal;
+      loginDiv.style.display = 'none';
+      examDiv.style.display = 'block';
+      loadQuestions();
+      startTimer();
+      window.scrollTo(0,0);
+    }
+  });
+
+  examForm.addEventListener('submit', ()=>{
+    clearInterval(timerInterval);
+  });
+</script>
+
+</body>
+</html>
