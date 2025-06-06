@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PIK-R Bojo Sios</title>
+  <style>
+    /* Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #a8edea, #fed6e3);
+      overflow-x: hidden;
+    }
+
+    /* Splash Screen */
+    #splash {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #1a73e8;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 9999;
+      animation: fadeOut 2s ease forwards;
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+
+    #splash h2 {
+      font-size: 2.5em;
+      margin-top: 20px;
+      animation: popIn 1s ease;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Container Utama */
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px 20px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1s ease forwards;
+      animation-delay: 2.5s;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      display: block;
+      width: 100px;
+      height: auto;
+      margin: 0 auto 20px;
+    }
+
+    h1 {
+      color: #1a73e8;
+      font-size: 2em;
+      margin-bottom: 15px;
+    }
+
+    input[type=text], textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #155ab6;
+    }
+
+    .timer {
+      font-weight: bold;
+      color: #d9534f;
+      text-align: right;
+      margin-bottom: 20px;
+      font-family: monospace;
+    }
+
+    /* Soal PG Rapi Seperti Google Form */
+    .question {
+      margin-bottom: 25px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .question b {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .answers label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: background 0.3s;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .answers label:hover {
+      background-color: #e9f0ff;
+    }
+
+    .answers input[type="radio"] {
+      flex-shrink: 0;
+      accent-color: #1a73e8;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      resize: vertical;
+      min-height: 100px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .result-container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 40px 30px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .motivation {
+      font-size: 1.3em;
+      line-height: 1.8;
+      min-height: 100px;
+      color: #333;
+      text-align: left;
+    }
+
+    .score {
+      font-size: 1.6em;
+      margin: 20px 0;
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      background: black;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0; }
+    }
+
+    .btn-finish {
+      margin-top: 30px;
+      padding: 12px 24px;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn-finish:hover {
+      background-color: #c82333;
+    }
+
+    footer {
+      text-align: center;
+      margin: 40px 0 20px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .container,
+      .result-container {
+        margin: 20px 10px;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Splash Screen -->
+<div id="splash">
+  <img src="https://files.catbox.moe/jiio1u.jpg"  alt="Logo PIK-R Bojo Sios" style="width: 100px;" />
+  <h2>PIK-R Bojo Sios</h2>
+</div>
+
+<!-- LOGIN -->
+<div id="loginDiv">
+  <div class="container">
+    <img src="https://files.catbox.moe/jiio1u.jpg"  alt="Logo PIK-R Bojo Sios" class="logo" />
+    <h1>Selamat Datang</h1>
+    <p>Masukkan nama lengkap dan kelas untuk memulai ujian.</p>
+    <form id="loginForm">
+      <input type="text" id="nama" placeholder="Masukkan Nama Lengkap" required autocomplete="off" />
+      <input type="text" id="kelas" placeholder="Masukkan Asal Kelas" required autocomplete="off" />
+      <button type="submit">Mulai Ujian</button>
+    </form>
+  </div>
+</div>
+
+<!-- UJIAN -->
+<div id="examDiv" style="display:none;">
+  <div class="container">
+    <img src="https://files.catbox.moe/jiio1u.jpg"  alt="Logo PIK-R Bojo Sios" class="logo" />
+    <h1>Ujian Seleksi</h1>
+    <div class="timer" id="timer">Waktu tersisa: 90:00</div>
+    <form id="examForm">
+      <input type="hidden" id="hiddenNama" name="nama" />
+      <input type="hidden" id="hiddenKelas" name="kelas" />
+      <input type="hidden" id="hiddenSkor" name="skor" />
+
+      <div id="questionsContainer"></div>
+
+      <button type="submit">Kirim Jawaban</button>
+    </form>
+  </div>
+</div>
+
+<!-- HASIL -->
+<div id="resultDiv" style="display:none;">
+  <div class="result-container">
+    <h1>Selamat!</h1>
+    <p>Kamu telah menyelesaikan ujian seleksi PIK-R Bojo Sios.</p>
+
+    <div id="scoreDisplay" class="score">Skor kamu: 0/40 (0%)</div>
+    <div class="motivation" id="typewriter"></div>
+    <span class="cursor" id="cursor"></span>
+
+    <button class="btn-finish" onclick="finishExam()">Selesai dan Keluar</button>
+
+    <!-- Musik Relaksasi -->
+    <div style="margin-top:30px;">
+      <audio controls autoplay loop>
+        <source src="https://files.catbox.moe/bmqwc2.mp3"  type="audio/mpeg">
+        Browser Anda tidak mendukung audio.
+      </audio>
+    </div>
+  </div>
+</div>
+
+<footer>&copy; 2025 PIK-R Bojo Sios. Bersama Kita Bisa.</footer>
+
+<script>
+  const loginForm = document.getElementById('loginForm');
+  const loginDiv = document.getElementById('loginDiv');
+  const examDiv = document.getElementById('examDiv');
+  const resultDiv = document.getElementById('resultDiv');
+  const questionsContainer = document.getElementById('questionsContainer');
+  const timerDisplay = document.getElementById('timer');
+  const hiddenNama = document.getElementById('hiddenNama');
+  const hiddenKelas = document.getElementById('hiddenKelas');
+  const hiddenSkor = document.getElementById('hiddenSkor');
+
+  const totalSeconds = 90 * 60;
+  let timeLeft = totalSeconds;
+  let timerInterval;
+
+  // Soal Pilihan Ganda (40 soal)
+  const pgQuestions = [
+    // IPA
+    {q:"Proses fotosintesis pada tumbuhan terjadi di bagian ...", options:["Akar","Batang","Daun","Bunga"], name:"q1", correct:"Daun"},
+    {q:"Enzim amilase berfungsi memecah ...", options:["Protein","Karbohidrat","Lemak","Vitamin"], name:"q2", correct:"Karbohidrat"},
+    {q:"Organ pernapasan utama manusia adalah ...", options:["Paru-paru","Jantung","Ginjal","Hati"], name:"q3", correct:"Paru-paru"},
+    {q:"Sumber energi utama fotosintesis adalah ...", options:["Air","Cahaya matahari","Tanah","Oksigen"], name:"q4", correct:"Cahaya matahari"},
+    {q:"Perubahan cair ke gas disebut ...", options:["Kondensasi","Evaporasi","Presipitasi","Sublimasi"], name:"q5", correct:"Evaporasi"},
+
+    // IPS
+    {q:"Ibukota Jawa Tengah adalah ...", options:["Semarang","Surabaya","Bandung","Yogyakarta"], name:"q6", correct:"Semarang"},
+    {q:"Pulau terbesar di Indonesia ...", options:["Kalimantan","Sumatera","Jawa","Bali"], name:"q7", correct:"Kalimantan"},
+    {q:"Sistem pemerintahan Indonesia adalah ...", options:["Monarki","Demokrasi","Oligarki","Diktator"], name:"q8", correct:"Demokrasi"},
+    {q:"Sumber daya alam terbarukan adalah ...", options:["Minyak bumi","Air","Batu bara","Emas"], name:"q9", correct:"Air"},
+    {q:"Lembaga yang mengatur keuangan negara ...", options:["MPR","BPK","DPR","BI"], name:"q10", correct:"BPK"},
+
+    // Pancasila & PKn
+    {q:"Sila pertama Pancasila adalah ...", options:["Ketuhanan yang Maha Esa","Keadilan sosial","Persatuan Indonesia","Kerakyatan"], name:"q11", correct:"Ketuhanan yang Maha Esa"},
+    {q:"Lambang Pancasila adalah ...", options:["Burung Garuda","Merpati","Elang Jawa","Rajawali"], name:"q12", correct:"Burung Garuda"},
+    {q:"Pancasila dirumuskan oleh ...", options:["Soekarno dan Hatta","Presiden RI","BPUPKI","MPR"], name:"q13", correct:"BPUPKI"},
+    {q:"Sila keempat Pancasila mengandung arti ...", options:["Persatuan","Kerakyatan","Keadilan sosial","Ketuhanan"], name:"q14", correct:"Kerakyatan"},
+    {q:"Jumlah sila Pancasila adalah ...", options:["4","5","6","7"], name:"q15", correct:"5"},
+
+    // Informatika
+    {q:"Fungsi utama sistem operasi adalah ...", options:["Mengatur perangkat keras","Menyimpan data","Membuat website","Membuat dokumen"], name:"q16", correct:"Mengatur perangkat keras"},
+    {q:"Perangkat keras untuk input data ...", options:["Monitor","Keyboard","Printer","Speaker"], name:"q17", correct:"Keyboard"},
+    {q:"Bahasa pemrograman untuk website ...", options:["Python","HTML","Java","C++"], name:"q18", correct:"HTML"},
+    {q:"Media penyimpanan eksternal adalah ...", options:["RAM","Hard disk eksternal","CPU","Monitor"], name:"q19", correct:"Hard disk eksternal"},
+    {q:"Internet menghubungkan ...", options:["Satu komputer","Banyak komputer","Smartphone","Tablet"], name:"q20", correct:"Banyak komputer"},
+
+    // PAI-BP
+    {q:"Nabi Muhammad lahir di kota ...", options:["Mekah","Madinah","Yerusalem","Kufah"], name:"q21", correct:"Mekah"},
+    {q:"Shalat wajib sehari ...", options:["3","4","5","6"], name:"q22", correct:"5"},
+    {q:"Bulan puasa umat Islam ...", options:["Ramadhan","Muharram","Syawal","Zulhijah"], name:"q23", correct:"Ramadhan"},
+    {q:"Kitab suci umat Islam ...", options:["Al-Qur’an","Alkitab","Weda","Tripitaka"], name:"q24", correct:"Al-Qur’an"},
+    {q:"Rukun Islam berjumlah ...", options:["3","4","5","6"], name:"q25", correct:"5"},
+
+    // Matematika
+    {q:"8 × 7 hasilnya ...", options:["54","56","58","60"], name:"q26", correct:"56"},
+    {q:"Jika x + 6 = 14, x adalah ...", options:["6","7","8","9"], name:"q27", correct:"8"},
+    {q:"0,2 sama dengan pecahan ...", options:["1/5","1/4","1/3","1/2"], name:"q28", correct:"1/5"},
+    {q:"Luas persegi sisi 5 cm ...", options:["10","20","25","30"], name:"q29", correct:"25"},
+    {q:"15 - 7 hasilnya ...", options:["8","9","7","6"], name:"q30", correct:"8"},
+
+    // Bahasa Indonesia
+    {q:"Sinonim 'bahagia' adalah ...", options:["Sedih","Senang","Marah","Jengkel"], name:"q31", correct:"Senang"},
+    {q:"Kalimat tanya adalah ...", options:["Aku suka membaca","Siapa namamu?","Dia pergi sekolah","Mereka main bola"], name:"q32", correct:"Siapa namamu?"},
+    {q:"Antonim 'besar' adalah ...", options:["Kecil","Panjang","Tinggi","Lebar"], name:"q33", correct:"Kecil"},
+    {q:"Kalimat efektif artinya ...", options:["Panjang","Jelas & singkat","Banyak kata","Sulit"], name:"q34", correct:"Jelas & singkat"},
+    {q:"Kata kerja pada 'Dia membaca buku' ...", options:["Dia","Sedang","Membaca","Buku"], name:"q35", correct:"Membaca"},
+
+    // Bahasa Inggris
+    {q:"Past tense of 'eat'?", options:["Eated","Eat","Ate","Eats"], name:"q36", correct:"Ate"},
+    {q:"Choose correct sentence:", options:["She are happy","She is happy","She am happy","She be happy"], name:"q37", correct:"She is happy"},
+    {q:"Sky color on clear day?", options:["Blue","Green","Red","Yellow"], name:"q38", correct:"Blue"},
+    {q:"Translate 'Saya suka bermain bola'", options:["I like playing ball","I am playing ball","I will play ball","I play ball yesterday"], name:"q39", correct:"I like playing ball"},
+    {q:"Plural of 'child'?", options:["Childs","Childes","Children","Child"], name:"q40", correct:"Children"}
+  ];
+
+  const essayQuestions = [
+    { q: "Jelaskan proses fotosintesis pada tumbuhan secara singkat.", name: "essay1" },
+    { q: "Sebutkan tiga contoh sumber daya alam terbarukan dan jelaskan.", name: "essay2" },
+    { q: "Apa makna sila pertama Pancasila bagi warga negara Indonesia?", name: "essay3" },
+    { q: "Jelaskan fungsi sistem operasi pada komputer.", name: "essay4" },
+    { q: "Apa arti penting shalat dalam agama Islam?", name: "essay5" }
+  ];
+
+  function createPGQuestion(qObj){
+    let answersHTML = qObj.options.map((opt, i) => {
+      const id = `${qObj.name}_${i}`;
+      return `
+        <label for="${id}">
+          <input type="radio" name="${qObj.name}" id="${id}" value="${opt}" required>
+          ${opt}
+        </label>`;
+    }).join('');
+
+    return `
+      <div class="question">
+        <b>${qObj.q}</b>
+        <div class="answers">${answersHTML}</div>
+      </div>`;
+  }
+
+  function createEssayQuestion(qObj) {
+    return `
+      <div class="question">
+        <b>${qObj.q}</b>
+        <textarea name="${qObj.name}" placeholder="Tulis jawaban..." required></textarea>
+      </div>`;
+  }
+
+  function loadQuestions() {
+    let html = '';
+    pgQuestions.forEach(q => {
+      html += createPGQuestion(q);
+    });
+    essayQuestions.forEach(q => {
+      html += createEssayQuestion(q);
+    });
+    questionsContainer.innerHTML = html;
+  }
+
+  function startTimer(){
+    timerInterval = setInterval(()=>{
+      if(timeLeft <= 0){
+        clearInterval(timerInterval);
+        alert("Waktu habis! Jawaban akan otomatis dikirim.");
+        document.getElementById("examForm").dispatchEvent(new Event("submit"));
+      } else {
+        timeLeft--;
+        let m = Math.floor(timeLeft / 60);
+        let s = timeLeft % 60;
+        timerDisplay.textContent = `Waktu tersisa: ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+      }
+    },1000);
+  }
+
+  function hitungSkor() {
+    let skor = 0;
+    const totalSoal = pgQuestions.length;
+
+    pgQuestions.forEach(q => {
+      const selectedOption = document.querySelector(`input[name="${q.name}"]:checked`);
+      if (selectedOption && selectedOption.value === q.correct) {
+        skor++;
+      }
+    });
+
+    return { skor, totalSoal };
+  }
+
+  function finishExam() {
+    window.location.href = "about:blank";
+  }
+
+  loginForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const namaVal = document.getElementById('nama').value.trim();
+    const kelasVal = document.getElementById('kelas').value.trim();
+    if(namaVal && kelasVal){
+      hiddenNama.value = namaVal;
+      hiddenKelas.value = kelasVal;
+      loginDiv.style.display = 'none';
+      examDiv.style.display = 'block';
+
+      loadQuestions();
+      startTimer();
+    }
+  });
+
+  document.getElementById("examForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const { skor, totalSoal } = hitungSkor();
+    const percent = Math.round((skor / totalSoal) * 100);
+
+    document.getElementById("scoreDisplay").textContent = `Skor kamu: ${skor}/${totalSoal} (${percent}%)`;
+
+    let index = 0;
+    const fullText = `Apapun hasilnya, jangan menyerah! Kamu sudah berusaha dengan baik. Bergabung di PIK-R adalah langkah awal menjadi generasi muda yang peduli terhadap kesehatan reproduksi dan sosial. Tetap semangat dan percaya pada dirimu sendiri!`;
+    const typewriterElement = document.getElementById("typewriter");
+    const cursorElement = document.getElementById("cursor");
+
+    function typeWriter() {
+      if (index < fullText.length) {
+        typewriterElement.textContent += fullText[index];
+        index++;
+        setTimeout(typeWriter, 30);
+      } else {
+        cursorElement.style.display = "none";
+      }
+    }
+
+    hiddenSkor.value = `${skor}/${totalSoal} (${percent}%)`;
+
+    const formData = new FormData(this);
+
+    fetch("https://formspree.io/f/mrbkeprv",  {
+      method: "POST",
+      body: formData,
+      headers: {
+        Accept: "application/json"
+      }
+    })
+    .then(() => {
+      examDiv.style.display = 'none';
+      resultDiv.style.display = 'block';
+      typeWriter();
+    })
+    .catch(err => {
+      alert("Gagal mengirim jawaban. Periksa koneksi internet atau coba lagi.");
+      console.error(err);
+    });
+  });
+</script>
+
+</body>
+</html>
